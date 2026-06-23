@@ -340,10 +340,10 @@ async function saveToFirebase(){
 // STATIC DATA
 // ════════════════════════════════════════════════
 const GROUPS={
-  A:['Mexico','South Africa','Korea Republic','Czechia'],
+  A:['Mexico','South Africa','Korea Republic','Czech Republic'],
   B:['Canada','Bosnia-Herzegovina','Qatar','Switzerland'],
   C:['Brazil','Morocco','Haiti','Scotland'],
-  D:['United States','Paraguay','Australia','Türkiye'],
+  D:['United States','Paraguay','Australia','Turkey'],
   E:['Germany','Curaçao','Ivory Coast','Ecuador'],
   F:['Netherlands','Japan','Sweden','Tunisia'],
   G:['Belgium','Egypt','Iran','New Zealand'],
@@ -362,16 +362,16 @@ const G_MIDS={
 };
 const MID_TO_GFI={};
 Object.keys(G_MIDS).forEach(g=>G_MIDS[g].forEach((mid,fi)=>{MID_TO_GFI[mid]={g,fi};}));
-const FLAGS={'Mexico':'mx','South Africa':'za','Korea Republic':'kr','Czechia':'cz','Canada':'ca','Bosnia-Herzegovina':'ba','Qatar':'qa','Switzerland':'ch','United States':'us','Paraguay':'py','Australia':'au','Türkiye':'tr','Haiti':'ht','Scotland':'gb-sct','Brazil':'br','Morocco':'ma','Ivory Coast':'ci','Ecuador':'ec','Germany':'de','Curaçao':'cw','Netherlands':'nl','Japan':'jp','Sweden':'se','Tunisia':'tn','Saudi Arabia':'sa','Uruguay':'uy','Spain':'es','Cape Verde':'cv','Iran':'ir','New Zealand':'nz','Belgium':'be','Egypt':'eg','France':'fr','Senegal':'sn','Iraq':'iq','Norway':'no','Argentina':'ar','Algeria':'dz','Austria':'at','Jordan':'jo','Ghana':'gh','Panama':'pa','England':'gb-eng','Croatia':'hr','Portugal':'pt','DR Congo':'cd','Uzbekistan':'uz','Colombia':'co'};
-const API_TEAM_MAP={'South Korea':'Korea Republic','Bosnia and Herzegovina':'Bosnia-Herzegovina','Turkey':'Türkiye','Turkiye':'Türkiye','Curacao':'Curaçao','DR Congo':'DR Congo','Congo DR':'DR Congo','Cape Verde':'Cape Verde','Cabo Verde':'Cape Verde','Czech Republic':'Czechia','United States':'United States','USA':'United States',"Côte d'Ivoire":'Ivory Coast'};
+const FLAGS={'Mexico':'mx','South Africa':'za','Korea Republic':'kr','Czech Republic':'cz','Canada':'ca','Bosnia-Herzegovina':'ba','Qatar':'qa','Switzerland':'ch','United States':'us','Paraguay':'py','Australia':'au','Turkey':'tr','Haiti':'ht','Scotland':'gb-sct','Brazil':'br','Morocco':'ma','Ivory Coast':'ci','Ecuador':'ec','Germany':'de','Curaçao':'cw','Netherlands':'nl','Japan':'jp','Sweden':'se','Tunisia':'tn','Saudi Arabia':'sa','Uruguay':'uy','Spain':'es','Cape Verde':'cv','Iran':'ir','New Zealand':'nz','Belgium':'be','Egypt':'eg','France':'fr','Senegal':'sn','Iraq':'iq','Norway':'no','Argentina':'ar','Algeria':'dz','Austria':'at','Jordan':'jo','Ghana':'gh','Panama':'pa','England':'gb-eng','Croatia':'hr','Portugal':'pt','DR Congo':'cd','Uzbekistan':'uz','Colombia':'co'};
+const API_TEAM_MAP={'South Korea':'Korea Republic','Bosnia and Herzegovina':'Bosnia-Herzegovina','Turkey':'Turkey','Türkiye':'Turkey','Curacao':'Curaçao','DR Congo':'DR Congo','Congo DR':'DR Congo','Cape Verde':'Cape Verde','Cabo Verde':'Cape Verde','Czechia':'Czech Republic','United States':'United States','USA':'United States',"Côte d'Ivoire":'Ivory Coast'};
 function normTeam(n){return API_TEAM_MAP[n]||n;}
 const MATCHES=[
   {id:1,date:'2026-06-11',time:'13:00',home:'Mexico',away:'South Africa',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'gs',group:'A'},
-  {id:2,date:'2026-06-11',time:'20:00',home:'Korea Republic',away:'Czechia',venue:'Estadio Akron',city:'Guadalajara',country:'mex',round:'gs',group:'A'},
+  {id:2,date:'2026-06-11',time:'20:00',home:'Korea Republic',away:'Czech Republic',venue:'Estadio Akron',city:'Guadalajara',country:'mex',round:'gs',group:'A'},
   {id:3,date:'2026-06-12',time:'15:00',home:'Canada',away:'Bosnia-Herzegovina',venue:'BMO Field',city:'Toronto',country:'can',round:'gs',group:'B'},
   {id:4,date:'2026-06-12',time:'18:00',home:'United States',away:'Paraguay',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'D'},
   {id:5,date:'2026-06-13',time:'21:00',home:'Haiti',away:'Scotland',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'C'},
-  {id:6,date:'2026-06-13',time:'21:00',home:'Australia',away:'Türkiye',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'D'},
+  {id:6,date:'2026-06-13',time:'21:00',home:'Australia',away:'Turkey',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'D'},
   {id:7,date:'2026-06-13',time:'18:00',home:'Brazil',away:'Morocco',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'gs',group:'C'},
   {id:8,date:'2026-06-13',time:'12:00',home:'Qatar',away:'Switzerland',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'B'},
   {id:9,date:'2026-06-14',time:'19:00',home:'Ivory Coast',away:'Ecuador',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'gs',group:'E'},
@@ -390,13 +390,13 @@ const MATCHES=[
   {id:22,date:'2026-06-17',time:'15:00',home:'England',away:'Croatia',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'gs',group:'L'},
   {id:23,date:'2026-06-17',time:'12:00',home:'Portugal',away:'DR Congo',venue:'NRG Stadium',city:'Houston',country:'usa',round:'gs',group:'K'},
   {id:24,date:'2026-06-17',time:'20:00',home:'Uzbekistan',away:'Colombia',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'gs',group:'K'},
-  {id:25,date:'2026-06-18',time:'12:00',home:'Czechia',away:'South Africa',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'gs',group:'A'},
+  {id:25,date:'2026-06-18',time:'12:00',home:'Czech Republic',away:'South Africa',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'gs',group:'A'},
   {id:26,date:'2026-06-18',time:'12:00',home:'Bosnia-Herzegovina',away:'Switzerland',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'B'},
   {id:27,date:'2026-06-18',time:'15:00',home:'Canada',away:'Qatar',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'B'},
   {id:28,date:'2026-06-18',time:'19:00',home:'Mexico',away:'Korea Republic',venue:'Estadio Akron',city:'Guadalajara',country:'mex',round:'gs',group:'A'},
   {id:29,date:'2026-06-19',time:'21:00',home:'Brazil',away:'Haiti',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'gs',group:'C'},
-  {id:30,date:'2026-06-19',time:'18:00',home:'Scotland',away:'Morocco',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'C'},
-  {id:31,date:'2026-06-19',time:'20:00',home:'Türkiye',away:'Paraguay',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'D'},
+  {id:30,date:'2026-06-19',time:'18:00',home:'Morocco',away:'Scotland',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'C'},
+  {id:31,date:'2026-06-19',time:'20:00',home:'Turkey',away:'Paraguay',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'D'},
   {id:32,date:'2026-06-19',time:'12:00',home:'United States',away:'Australia',venue:'Lumen Field',city:'Seattle',country:'usa',round:'gs',group:'D'},
   {id:33,date:'2026-06-20',time:'16:00',home:'Germany',away:'Ivory Coast',venue:'BMO Field',city:'Toronto',country:'can',round:'gs',group:'E'},
   {id:34,date:'2026-06-20',time:'19:00',home:'Ecuador',away:'Curaçao',venue:'Arrowhead Stadium',city:'Kansas City',country:'usa',round:'gs',group:'E'},
@@ -418,13 +418,13 @@ const MATCHES=[
   {id:50,date:'2026-06-24',time:'18:00',home:'Morocco',away:'Haiti',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'gs',group:'C'},
   {id:51,date:'2026-06-24',time:'12:00',home:'Switzerland',away:'Canada',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'B'},
   {id:52,date:'2026-06-24',time:'12:00',home:'Bosnia-Herzegovina',away:'Qatar',venue:'Lumen Field',city:'Seattle',country:'usa',round:'gs',group:'B'},
-  {id:53,date:'2026-06-24',time:'19:00',home:'Czechia',away:'Mexico',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'gs',group:'A'},
+  {id:53,date:'2026-06-24',time:'19:00',home:'Czech Republic',away:'Mexico',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'gs',group:'A'},
   {id:54,date:'2026-06-24',time:'19:00',home:'South Africa',away:'Korea Republic',venue:'Estadio BBVA',city:'Monterrey',country:'mex',round:'gs',group:'A'},
   {id:55,date:'2026-06-25',time:'16:00',home:'Curaçao',away:'Ivory Coast',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'gs',group:'E'},
   {id:56,date:'2026-06-25',time:'16:00',home:'Ecuador',away:'Germany',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'gs',group:'E'},
   {id:57,date:'2026-06-25',time:'18:00',home:'Japan',away:'Sweden',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'gs',group:'F'},
   {id:58,date:'2026-06-25',time:'18:00',home:'Tunisia',away:'Netherlands',venue:'Arrowhead Stadium',city:'Kansas City',country:'usa',round:'gs',group:'F'},
-  {id:59,date:'2026-06-25',time:'19:00',home:'Türkiye',away:'United States',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'D'},
+  {id:59,date:'2026-06-25',time:'19:00',home:'Turkey',away:'United States',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'D'},
   {id:60,date:'2026-06-25',time:'19:00',home:'Paraguay',away:'Australia',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'D'},
   {id:61,date:'2026-06-26',time:'15:00',home:'Norway',away:'France',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'I'},
   {id:62,date:'2026-06-26',time:'15:00',home:'Senegal',away:'Iraq',venue:'BMO Field',city:'Toronto',country:'can',round:'gs',group:'I'},
@@ -526,11 +526,11 @@ async function fetchLiveData(){
     'Bosnia and Herzegovina':'Bosnia-Herzegovina','Bosnia & Herzegovina':'Bosnia-Herzegovina',
     'Korea Republic':'Korea Republic','South Korea':'Korea Republic',
     'DR Congo':'DR Congo','Congo DR':'DR Congo','Congo, DR':'DR Congo',
-    'Türkiye':'Türkiye','Turkey':'Türkiye',
+    'Türkiye':'Turkey','Turkey':'Turkey',
     'Curacao':'Curaçao','Curaçao':'Curaçao',
     "Côte d'Ivoire":'Ivory Coast',"Cote d'Ivoire":'Ivory Coast','Ivory Coast':'Ivory Coast',
     'Cape Verde':'Cape Verde','Cabo Verde':'Cape Verde',
-    'Czech Republic':'Czechia','Czechia':'Czechia',
+    'Czech Republic':'Czech Republic','Czechia':'Czech Republic',
     'United States':'United States','USA':'United States','US':'United States'
   };
   function norm(n){return NORM[n]||n;}
