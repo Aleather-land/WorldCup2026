@@ -517,9 +517,9 @@ async function fetchLiveData(){
 
   // Try multiple CDN URLs in order — all serve the same openfootball data with CORS headers
   const URLS=[
-    //'https://cdn.jsdelivr.net/gh/openfootball/worldcup.json@master/2026/worldcup.json',
     'https://cdn.statically.io/gh/openfootball/worldcup.json/master/2026/worldcup.json',
-    'https://raw.githack.com/openfootball/worldcup.json/master/2026/worldcup.json'
+    'https://raw.githack.com/openfootball/worldcup.json/master/2026/worldcup.json',
+    'https://cdn.jsdelivr.net/gh/openfootball/worldcup.json@master/2026/worldcup.json'
   ];
 
   const NORM={
