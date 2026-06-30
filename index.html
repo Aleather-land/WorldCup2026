@@ -82,13 +82,45 @@ html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,Blin
 .mc-team-name.h{text-align:right;}.mc-team-name.a{text-align:left;}
 .mc-team-name.tbd{color:var(--text3);font-style:italic;}
 .mc-team-name.won{color:#5de890 !important;font-weight:700 !important;}
-.mc-scorebox{display:flex;align-items:center;gap:2px;flex-shrink:0;min-width:46px;justify-content:center;}
+.mc-scorebox{display:flex;align-items:center;gap:2px;flex-shrink:0;min-width:55px;justify-content:center;}
 .mc-score-val{font-size:13px;font-weight:700;color:#fff;min-width:16px;text-align:center;}
 .mc-score-sep{font-size:10px;color:var(--text3);}
 .mc-score-val.no-score{color:var(--text3);font-weight:400;font-size:10px;}
 .mc-chevron{font-size:10px;color:var(--text3);flex-shrink:0;transition:transform .2s;margin-left:3px;}
 .mc.open .mc-chevron{transform:rotate(180deg);}
 .mc-meta-row{font-size:9px;color:var(--text3);padding:0 7px 3px;display:flex;gap:8px;align-items:center;}
+.mc-score-stack{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  line-height:1.05;
+  min-width:42px;
+}
+
+.mc-main-score{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+}
+
+.mc-pens-score{
+  display:block;
+  margin-top:2px;
+  font-size:10px;
+  font-weight:700;
+  color:var(--gold);
+}
+
+.mc-pens-label{
+  display:block;
+  margin-top:1px;
+  font-size:8px;
+  color:var(--gold);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(0.8);}}
 .live-badge{background:var(--live);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;animation:pulse 1.5s ease-in-out infinite;}
 .ft-badge{background:rgba(37,160,80,0.2);color:#3ad070;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;}
@@ -950,7 +982,7 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
   : null;
 
 const penText = pens
-  ? ` <span style="font-size:9px;color:var(--gold);white-space:nowrap;">pens ${pens[0]}–${pens[1]}</span>`
+  ? `<span class="mc-pens-score">${pens[0]}:${pens[1]}</span><span class="mc-pens-label">pens</span>`
   : '';
 
   return`<div class="mc ${roundCls}${isLive?' live-match':''}" id="mc-${mid}">
@@ -959,7 +991,17 @@ const penText = pens
       <div class="mc-teams-row">
         <span class="mc-team-name h${homeTbd?' tbd':''}${wonH}">${homeTbd?'':(flag(homeTeam))}${homeTeam}</span>
         <span class="mc-scorebox">
-          ${sc?`<span class="mc-score-val">${dHs}</span><span class="mc-score-sep">–</span><span class="mc-score-val">${dAs}</span>${penText}`:`<span class="mc-score-val no-score">vs</span>`}
+          ${sc
+            ? `<span class="mc-score-stack">
+                <span class="mc-main-score">
+                  <span class="mc-score-val">${dHs}</span>
+                  <span class="mc-score-sep">:</span>
+                  <span class="mc-score-val">${dAs}</span>
+                </span>
+                ${penText}
+               </span>`
+           : `<span class="mc-score-val no-score">vs</span>`
+          }
         </span>
         <span class="mc-team-name a${awayTbd?' tbd':''}${wonA}">${awayTbd?'':(flag(awayTeam))}${awayTeam}</span>
       </div>
