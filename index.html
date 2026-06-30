@@ -491,14 +491,74 @@ function initState(){
 // ════════════════════════════════════════════════
 // EFFECTIVE SCORE
 // ════════════════════════════════════════════════
+
 function getScore(mid){
-  if(apiData[mid]&&apiData[mid].hs!==null&&apiData[mid].as!==null)
-    return{hs:apiData[mid].hs,as:apiData[mid].as,fromApi:true};
-  const gfi=MID_TO_GFI[mid];
-  if(gfi){const sc=state.groups[gfi.g][gfi.fi];if(sc.hs!==''&&sc.as!=='')return{hs:sc.hs,as:sc.as,fromApi:false};}
-  else{const sc=state.ko[mid];if(sc&&sc.hs!==''&&sc.as!=='')return{hs:sc.hs,as:sc.as,fromApi:false};}
+  const d = apiData[mid];
+
+  if(
+    d &&
+    d.hs !== undefined &&
+    d.hs !== null &&
+    d.as !== undefined &&
+    d.as !== null &&
+    d.hs !== '' &&
+    d.as !== '' &&
+    !isNaN(parseInt(d.hs)) &&
+    !isNaN(parseInt(d.as))
+  ){
+    return {
+      hs: parseInt(d.hs),
+      as: parseInt(d.as),
+      fromApi: true
+    };
+  }
+
+  const gfi = MID_TO_GFI[mid];
+
+  if(gfi){
+    const sc = state.groups[gfi.g][gfi.fi];
+
+    if(
+      sc.hs !== undefined &&
+      sc.hs !== null &&
+      sc.as !== undefined &&
+      sc.as !== null &&
+      sc.hs !== '' &&
+      sc.as !== '' &&
+      !isNaN(parseInt(sc.hs)) &&
+      !isNaN(parseInt(sc.as))
+    ){
+      return {
+        hs: parseInt(sc.hs),
+        as: parseInt(sc.as),
+        fromApi: false
+      };
+    }
+  } else {
+    const sc = state.ko[mid];
+
+    if(
+      sc &&
+      sc.hs !== undefined &&
+      sc.hs !== null &&
+      sc.as !== undefined &&
+      sc.as !== null &&
+      sc.hs !== '' &&
+      sc.as !== '' &&
+      !isNaN(parseInt(sc.hs)) &&
+      !isNaN(parseInt(sc.as))
+    ){
+      return {
+        hs: parseInt(sc.hs),
+        as: parseInt(sc.as),
+        fromApi: false
+      };
+    }
+  }
+
   return null;
 }
+  
 function getScorers(mid,side){
   if(apiData[mid]&&apiData[mid][side+'Scorers']&&apiData[mid][side+'Scorers'].length)
     return apiData[mid][side+'Scorers'].map(s=>({...s,fromApi:true}));
