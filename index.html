@@ -568,9 +568,11 @@ async function fetchLiveData(){
 
     allMatches.forEach(m=>{
       // Get team names (may be string or object with .name)
-      const t1=typeof m.team1==='string'?m.team1:(m.team1&&m.team1.name?m.team1.name:'');
-      const t2=typeof m.team2==='string'?m.team2:(m.team2&&m.team2.name?m.team2.name:'');
-      const homeN=norm(t1), awayN=norm(t2);
+      const t1 = cleanTeamName(m.team1);
+      const t2 = cleanTeamName(m.team2);
+
+      const homeN = norm(t1);
+      const awayN = norm(t2);
 
       // Find our internal match
       let ourMatch = null;
@@ -729,16 +731,47 @@ function pairLoser(id,pairs){
   return w === null ? '?' : (w === 0 ? p[1] : p[0]);
 }
 
+function cleanTeamName(t){
+  if(t === undefined || t === null) return '';
+  if(typeof t === 'string'){
+    const s = t.trim();
+    if(!s || s === 'undefined' || s === 'null') return '';
+    return s;
+  }
+
+  if(typeof t === 'object'){
+    return cleanTeamName(
+      t.name ||
+      t.team ||
+      t.title ||
+      t.country ||
+      t.label ||
+      ''
+    );
+  }
+
+  return cleanTeamName(String(t));
+}
+
+function isRealTeamName(t){
+  return cleanTeamName(t) !== '';
+}
+
 function r32Pairs(){
   const {firsts:f, seconds:s, thirds:t} = getAdvancing();
 
   const fn = g => f[g] ? f[g].name : '?';
   const sn = g => s[g] ? s[g].name : '?';
 
-  const apiPair = (mid, fallback) =>
-    apiData[mid] && apiData[mid].homeTeam && apiData[mid].awayTeam
-      ? [apiData[mid].homeTeam, apiData[mid].awayTeam]
-      : fallback;
+  const apiPair = (mid, fallback) => {
+    const d = apiData[mid];
+
+    if(d && isRealTeamName(d.homeTeam) && isRealTeamName(d.awayTeam)){
+      return [cleanTeamName(d.homeTeam), cleanTeamName(d.awayTeam)];
+    }
+
+    return fallback;
+  };
 
   const usedThirdGroups = new Set();
 
@@ -836,6 +869,8 @@ function refreshPills(mid){const el=document.getElementById('spills-'+mid);if(el
 // ════════════════════════════════════════════════
 function buildMC(mid,homeTeam,awayTeam,opts={}){
   const{matchLabel='',metaLine='',roundCls='',badgeLabel='',tbd=false}=opts;
+  homeTeam = cleanTeamName(homeTeam) || '?';
+  awayTeam = cleanTeamName(awayTeam) || '?';
   const sc=getScore(mid);
   const w=sc?(parseInt(sc.hs)>parseInt(sc.as)?'home':parseInt(sc.as)>parseInt(sc.hs)?'away':null):null;
   const hS=getScorers(mid,'home'),aS=getScorers(mid,'away');
