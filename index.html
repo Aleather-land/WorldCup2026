@@ -688,6 +688,7 @@ function getAdvancing(){
   thirds.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
   return{firsts,seconds,thirds:thirds.slice(0,8)};
 }
+
 function koWin(id){
   const d = apiData[id];
 
@@ -695,18 +696,19 @@ function koWin(id){
   if(d && d.penalties && d.penalties.length === 2){
     const hp = parseInt(d.penalties[0]);
     const ap = parseInt(d.penalties[1]);
+
     if(!isNaN(hp) && !isNaN(ap)){
       if(hp > ap) return 0;
       if(ap > hp) return 1;
     }
   }
 
-  // Then normal score.
   const sc = getScore(id);
   if(!sc) return null;
 
   const hs = parseInt(sc.hs);
   const as = parseInt(sc.as);
+
   if(isNaN(hs) || isNaN(as)) return null;
 
   if(hs > as) return 0;
@@ -717,6 +719,20 @@ function koWin(id){
   
 function pairWinner(id,pairs){const p=pairs[id]||['?','?'];const w=koWin(id);return w===null?'?':(w===0?p[0]:p[1]);}
 function pairLoser(id,pairs){const p=pairs[id]||['?','?'];const w=koWin(id);return w===null?'?':(w===0?p[1]:p[0]);}
+
+Thought for a few seconds
+
+Yes, I can see it now. Two things did not make it into the version you uploaded:
+
+1. r32Pairs() is still not using API teams
+
+Your current r32Pairs() still returns this for M74:
+
+74: [fn('E'), bestThirdFrom(['A','B','C','D','F'], '3rd A/B/C/D/F')]
+
+So it is still calculating Germany’s opponent from your third-place logic, rather than using the API (Application Programming Interface) team for M74. That is why it still shows Germany vs Sweden instead of Germany vs Paraguay.
+
+Replace your whole r32Pairs() function with this:
 
 function r32Pairs(){
   const {firsts:f, seconds:s, thirds:t} = getAdvancing();
@@ -838,6 +854,13 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
   if(gfi){const s=state.groups[gfi.g][gfi.fi];hsVal=s.hs;asVal=s.as;}
   else if(state.ko[mid]){hsVal=state.ko[mid].hs;asVal=state.ko[mid].as;}
   const dHs=sc?sc.hs:hsVal,dAs=sc?sc.as:asVal;
+  const pens = apiData[mid] && apiData[mid].penalties && apiData[mid].penalties.length === 2
+  ? apiData[mid].penalties
+  : null;
+
+const penText = Pens
+  ? ` <span style="font-size:9px;color:var(--gold);white-space:nowrap;">pens ${pens[0]}–${pens[1]}</span>`
+  : '';
 
   return`<div class="mc ${roundCls}${isLive?' live-match':''}" id="mc-${mid}">
     <div class="mc-header" onclick="toggleMC(this.closest('.mc'))">
@@ -845,7 +868,7 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
       <div class="mc-teams-row">
         <span class="mc-team-name h${homeTbd?' tbd':''}${wonH}">${homeTbd?'':(flag(homeTeam))}${homeTeam}</span>
         <span class="mc-scorebox">
-          ${sc?`<span class="mc-score-val">${dHs}</span><span class="mc-score-sep">–</span><span class="mc-score-val">${dAs}</span>`:`<span class="mc-score-val no-score">vs</span>`}
+          ${sc?`<span class="mc-score-val">${dHs}</span><span class="mc-score-sep">–</span><span class="mc-score-val">${dAs}</span>${penText}`:`<span class="mc-score-val no-score">vs</span>`}
         </span>
         <span class="mc-team-name a${awayTbd?' tbd':''}${wonA}">${awayTbd?'':(flag(awayTeam))}${awayTeam}</span>
       </div>
