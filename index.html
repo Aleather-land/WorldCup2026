@@ -688,24 +688,47 @@ function getAdvancing(){
   thirds.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
   return{firsts,seconds,thirds:thirds.slice(0,8)};
 }
-function koWin(id){const sc=getScore(id);if(!sc)return null;const hs=parseInt(sc.hs),as=parseInt(sc.as);if(isNaN(hs)||isNaN(as))return null;return hs>as?0:as>hs?1:null;}
+function koWin(id){
+  const d = apiData[id];
+
+  // Penalty shoot-out takes priority.
+  if(d && d.penalties && d.penalties.length === 2){
+    const hp = parseInt(d.penalties[0]);
+    const ap = parseInt(d.penalties[1]);
+    if(!isNaN(hp) && !isNaN(ap)){
+      if(hp > ap) return 0;
+      if(ap > hp) return 1;
+    }
+  }
+
+  // Then normal score.
+  const sc = getScore(id);
+  if(!sc) return null;
+
+  const hs = parseInt(sc.hs);
+  const as = parseInt(sc.as);
+  if(isNaN(hs) || isNaN(as)) return null;
+
+  if(hs > as) return 0;
+  if(as > hs) return 1;
+
+  return null;
+}
+  
 function pairWinner(id,pairs){const p=pairs[id]||['?','?'];const w=koWin(id);return w===null?'?':(w===0?p[0]:p[1]);}
 function pairLoser(id,pairs){const p=pairs[id]||['?','?'];const w=koWin(id);return w===null?'?':(w===0?p[1]:p[0]);}
+
 function r32Pairs(){
   const {firsts:f, seconds:s, thirds:t} = getAdvancing();
 
   const fn = g => f[g] ? f[g].name : '?';
   const sn = g => s[g] ? s[g].name : '?';
 
-  // Convert qualified third-place teams into a lookup by group.
-  // Example: thirdByGroup.K = { name:'DR Congo', group:'K', ... }
-  const thirdByGroup = {};
-  t.forEach(team => {
-    if(team && team.group) thirdByGroup[team.group] = team;
-  });
+  const apiPair = (mid, fallback) =>
+    apiData[mid] && apiData[mid].homeTeam && apiData[mid].awayTeam
+      ? [apiData[mid].homeTeam, apiData[mid].awayTeam]
+      : fallback;
 
-  // Pick the highest-ranked available third-place team from a permitted group list.
-  // This prevents every Best 3rd slot from taking t[0].
   const usedThirdGroups = new Set();
 
   function bestThirdFrom(allowedGroups, label){
@@ -718,30 +741,31 @@ function r32Pairs(){
 
     if(!candidates.length) return label || 'Best 3rd';
 
-    const picked = candidates[0]; // t is already sorted by points, goal difference, goals for
+    const picked = candidates[0];
     usedThirdGroups.add(picked.group);
     return picked.name;
   }
 
   return {
-    73: [sn('A'), sn('B')],
-    74: [fn('E'), bestThirdFrom(['A','B','C','D','F'], '3rd A/B/C/D/F')],
-    75: [fn('F'), sn('C')],
-    76: [fn('C'), sn('F')],
-    77: [fn('I'), bestThirdFrom(['C','D','F','G','H'], '3rd C/D/F/G/H')],
-    78: [sn('E'), sn('I')],
-    79: [fn('A'), bestThirdFrom(['C','E','F','H','I'], '3rd C/E/F/H/I')],
-    80: [fn('L'), bestThirdFrom(['E','H','I','J','K'], '3rd E/H/I/J/K')],
-    81: [fn('D'), bestThirdFrom(['B','E','F','I','J'], '3rd B/E/F/I/J')],
-    82: [fn('G'), bestThirdFrom(['A','E','H','I','J'], '3rd A/E/H/I/J')],
-    83: [sn('K'), sn('L')],
-    84: [fn('H'), sn('J')],
-    85: [fn('B'), bestThirdFrom(['A','C','E','F','G'], '3rd A/C/E/F/G')],
-    86: [fn('J'), sn('H')],
-    87: [fn('K'), bestThirdFrom(['D','E','I','J','L'], '3rd D/E/I/J/L')],
-    88: [sn('D'), sn('G')]
+    73: apiPair(73, [sn('A'), sn('B')]),
+    74: apiPair(74, [fn('E'), bestThirdFrom(['A','B','C','D','F'], '3rd A/B/C/D/F')]),
+    75: apiPair(75, [fn('F'), sn('C')]),
+    76: apiPair(76, [fn('C'), sn('F')]),
+    77: apiPair(77, [fn('I'), bestThirdFrom(['C','D','F','G','H'], '3rd C/D/F/G/H')]),
+    78: apiPair(78, [sn('E'), sn('I')]),
+    79: apiPair(79, [fn('A'), bestThirdFrom(['C','E','F','H','I'], '3rd C/E/F/H/I')]),
+    80: apiPair(80, [fn('L'), bestThirdFrom(['E','H','I','J','K'], '3rd E/H/I/J/K')]),
+    81: apiPair(81, [fn('D'), bestThirdFrom(['B','E','F','I','J'], '3rd B/E/F/I/J')]),
+    82: apiPair(82, [fn('G'), bestThirdFrom(['A','E','H','I','J'], '3rd A/E/H/I/J')]),
+    83: apiPair(83, [sn('K'), sn('L')]),
+    84: apiPair(84, [fn('H'), sn('J')]),
+    85: apiPair(85, [fn('B'), bestThirdFrom(['A','C','E','F','G'], '3rd A/C/E/F/G')]),
+    86: apiPair(86, [fn('J'), sn('H')]),
+    87: apiPair(87, [fn('K'), bestThirdFrom(['D','E','I','J','L'], '3rd D/E/I/J/L')]),
+    88: apiPair(88, [sn('D'), sn('G')])
   };
 }
+  
 function r16Pairs(p32){return{89:[pairWinner(74,p32),pairWinner(77,p32)],90:[pairWinner(73,p32),pairWinner(75,p32)],91:[pairWinner(76,p32),pairWinner(78,p32)],92:[pairWinner(79,p32),pairWinner(80,p32)],93:[pairWinner(83,p32),pairWinner(84,p32)],94:[pairWinner(81,p32),pairWinner(82,p32)],95:[pairWinner(86,p32),pairWinner(88,p32)],96:[pairWinner(85,p32),pairWinner(87,p32)]};}
 function qfPairs(p16){return{97:[pairWinner(89,p16),pairWinner(90,p16)],98:[pairWinner(93,p16),pairWinner(94,p16)],99:[pairWinner(91,p16),pairWinner(92,p16)],100:[pairWinner(95,p16),pairWinner(96,p16)]};}
 function sfPairs(pqf){return{101:[pairWinner(97,pqf),pairWinner(98,pqf)],102:[pairWinner(99,pqf),pairWinner(100,pqf)]};}
