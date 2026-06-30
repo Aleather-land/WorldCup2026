@@ -594,6 +594,14 @@ async function fetchLiveData(){
 
       const mid = ourMatch.id;
 
+      if(mid >= 73){
+        apiData[mid] = {
+          ...(apiData[mid] || {}),
+          homeTeam: homeN,
+          awayTeam: awayN
+        };
+      }
+
       // Score — support both formats
       let hs=null,as=null;
       if(m.score&&m.score.ft&&m.score.ft.length===2){hs=m.score.ft[0];as=m.score.ft[1];}
@@ -615,7 +623,19 @@ async function fetchLiveData(){
         fromApi:true
       }));
 
-      apiData[mid]={hs:parseInt(hs),as:parseInt(as),status:'FT',isLive:false,isDone:true,homeScorers,awayScorers};
+      apiData[mid] = {
+      hs: parseInt(hs),
+      as: parseInt(as),
+      status: 'FT',
+      isLive: false,
+      isDone: true,
+      homeTeam: homeN,
+      awayTeam: awayN,
+      homeScorers,
+      awayScorers,
+      penalties: m.score && m.score.p ? m.score.p : null,
+      extraTime: m.score && m.score.et ? m.score.et : null
+      };
 
       // Push into state for standings calculation
       const gfi=MID_TO_GFI[mid];
@@ -726,8 +746,29 @@ function r16Pairs(p32){return{89:[pairWinner(74,p32),pairWinner(77,p32)],90:[pai
 function qfPairs(p16){return{97:[pairWinner(89,p16),pairWinner(90,p16)],98:[pairWinner(93,p16),pairWinner(94,p16)],99:[pairWinner(91,p16),pairWinner(92,p16)],100:[pairWinner(95,p16),pairWinner(96,p16)]};}
 function sfPairs(pqf){return{101:[pairWinner(97,pqf),pairWinner(98,pqf)],102:[pairWinner(99,pqf),pairWinner(100,pqf)]};}
 function allPairs(){const p32=r32Pairs(),p16=r16Pairs(p32),pqf=qfPairs(p16),psf=sfPairs(pqf);return{p32,p16,pqf,psf};}
-function resolveTeams(mid){const{p32,p16,pqf,psf}=allPairs();if(p32[mid])return p32[mid];if(p16[mid])return p16[mid];if(pqf[mid])return pqf[mid];if(psf[mid])return psf[mid];if(mid===103){const psf2=sfPairs(qfPairs(r16Pairs(r32Pairs())));return[pairLoser(101,psf2),pairLoser(102,psf2)];}if(mid===104){const psf2=sfPairs(qfPairs(r16Pairs(r32Pairs())));return[pairWinner(101,psf2),pairWinner(102,psf2)];}return['?','?'];}
+function resolveTeams(mid){
+  if(apiData[mid] && apiData[mid].homeTeam && apiData[mid].awayTeam){
+    return [apiData[mid].homeTeam, apiData[mid].awayTeam];
+  }
 
+  const {p32,p16,pqf,psf}=allPairs();
+  if(p32[mid])return p32[mid];
+  if(p16[mid])return p16[mid];
+  if(pqf[mid])return pqf[mid];
+  if(psf[mid])return psf[mid];
+
+  if(mid===103){
+    const psf2=sfPairs(qfPairs(r16Pairs(r32Pairs())));
+    return[pairLoser(101,psf2),pairLoser(102,psf2)];
+  }
+
+  if(mid===104){
+    const psf2=sfPairs(qfPairs(r16Pairs(r32Pairs())));
+    return[pairWinner(101,psf2),pairWinner(102,psf2)];
+  }
+
+  return['?','?'];
+}
 // ════════════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════════════
