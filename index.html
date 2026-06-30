@@ -573,11 +573,26 @@ async function fetchLiveData(){
       const homeN=norm(t1), awayN=norm(t2);
 
       // Find our internal match
-      const ourMatch=MATCHES.find(x=>x.home===homeN&&x.away===awayN)||
-                     MATCHES.find(x=>norm(x.home)===homeN&&norm(x.away)===awayN)||
-                     MATCHES.find(x=>x.home.includes(homeN.split(' ')[0])&&x.away.includes(awayN.split(' ')[0]));
-      if(!ourMatch)return;
-      const mid=ourMatch.id;
+      let ourMatch = null;
+
+      // Knockout matches from openfootball have a fixed "num" field.
+      // Use that first, because our local MATCHES array may still contain placeholders
+      // like "Best 3rd", "W74", "1st Grp E", etc.
+       if(m.num !== undefined && m.num !== null){
+         ourMatch = MATCHES.find(x => x.id === Number(m.num));
+       }
+      
+       // Group-stage fallback by team names.
+       if(!ourMatch){
+         ourMatch =
+          MATCHES.find(x => x.home === homeN && x.away === awayN) ||
+          MATCHES.find(x => norm(x.home) === homeN && norm(x.away) === awayN) ||
+          MATCHES.find(x => x.home.includes(homeN.split(' ')[0]) && x.away.includes(awayN.split(' ')[0]));
+      }
+      
+      if(!ourMatch) return;
+
+      const mid = ourMatch.id;
 
       // Score — support both formats
       let hs=null,as=null;
