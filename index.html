@@ -717,22 +717,17 @@ function koWin(id){
   return null;
 }
   
-function pairWinner(id,pairs){const p=pairs[id]||['?','?'];const w=koWin(id);return w===null?'?':(w===0?p[0]:p[1]);}
-function pairLoser(id,pairs){const p=pairs[id]||['?','?'];const w=koWin(id);return w===null?'?':(w===0?p[1]:p[0]);}
+function pairWinner(id,pairs){
+  const p = pairs[id] || ['?','?'];
+  const w = koWin(id);
+  return w === null ? '?' : (w === 0 ? p[0] : p[1]);
+}
 
-Thought for a few seconds
-
-Yes, I can see it now. Two things did not make it into the version you uploaded:
-
-1. r32Pairs() is still not using API teams
-
-Your current r32Pairs() still returns this for M74:
-
-74: [fn('E'), bestThirdFrom(['A','B','C','D','F'], '3rd A/B/C/D/F')]
-
-So it is still calculating Germany’s opponent from your third-place logic, rather than using the API (Application Programming Interface) team for M74. That is why it still shows Germany vs Sweden instead of Germany vs Paraguay.
-
-Replace your whole r32Pairs() function with this:
+function pairLoser(id,pairs){
+  const p = pairs[id] || ['?','?'];
+  const w = koWin(id);
+  return w === null ? '?' : (w === 0 ? p[1] : p[0]);
+}
 
 function r32Pairs(){
   const {firsts:f, seconds:s, thirds:t} = getAdvancing();
@@ -845,7 +840,8 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
   const w=sc?(parseInt(sc.hs)>parseInt(sc.as)?'home':parseInt(sc.as)>parseInt(sc.hs)?'away':null):null;
   const hS=getScorers(mid,'home'),aS=getScorers(mid,'away');
   const hasPills=hS.length||aS.length;
-  const homeTbd=homeTeam==='?'||tbd,awayTbd=awayTeam==='?'||tbd;
+  const homeTbd = !homeTeam || homeTeam === '?' || tbd;
+  const awayTbd = !awayTeam || awayTeam === '?' || tbd;
   const wonH=w==='home'?' won':'',wonA=w==='away'?' won':'';
   const isLive=apiData[mid]&&apiData[mid].isLive;
   const fromApi=sc&&sc.fromApi;
@@ -858,7 +854,7 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
   ? apiData[mid].penalties
   : null;
 
-const penText = Pens
+const penText = pens
   ? ` <span style="font-size:9px;color:var(--gold);white-space:nowrap;">pens ${pens[0]}–${pens[1]}</span>`
   : '';
 
