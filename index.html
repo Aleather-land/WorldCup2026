@@ -997,11 +997,34 @@ function renderAll(){renderGroups();renderKO();if(document.getElementById('sec-s
 let toastTimer=null;
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;void el.offsetWidth;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
 
-// Auto-launch immediately — config is hardcoded, no setup needed
-window.addEventListener('load',()=>{
-  if(window._fbImports){launch(true);}
-  else{window.addEventListener('fbReady',()=>launch(true),{once:true});}
-});
+// Auto-launch safely, even if Firebase is slow or fails to load
+let appStarted = false;
+
+function startApp(){
+  if(appStarted) return;
+  appStarted = true;
+
+  if(window._fbImports){
+    launch(true);
+  } else {
+    launch(false);
+  }
+}
+
+window.addEventListener('fbReady', () => {
+  if(!appStarted) startApp();
+}, {once:true});
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(startApp, 500);
+  });
+} else {
+  setTimeout(startApp, 500);
+}
+
+// Final fallback in case Firebase import hangs or the event is missed
+setTimeout(startApp, 2000);
 </script>
 </body>
 </html>
