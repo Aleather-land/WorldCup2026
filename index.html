@@ -78,7 +78,14 @@ html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,Blin
 .mc-header:hover{background:rgba(255,255,255,0.03);}
 .mc-num{font-size:9px;color:var(--text3);min-width:24px;flex-shrink:0;}
 .mc-teams-row{display:flex;align-items:center;flex:1;gap:4px;min-width:0;}
-.mc-team-name{font-size:50px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mc-team-name{
+  font-size:11px;
+  color:var(--text);
+  flex:1 1 0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
 .mc-team-name.h{text-align:right;}.mc-team-name.a{text-align:left;}
 .mc-team-name.tbd{color:var(--text3);font-style:italic;}
 .mc-team-name.won{color:#5de890 !important;font-weight:700 !important;}
@@ -164,7 +171,12 @@ html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,Blin
 
 /* ── KO ── */
 .ko-stage-label{color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;text-align:center;margin:14px 0 8px;}
-.ko-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;margin-bottom:8px;}
+.ko-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:10px;
+  margin-bottom:8px;
+}
 .ko-match-wrap{background:var(--bg1);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .ko-match-wrap.decided{border-color:rgba(29,122,63,0.4);}
 .ko-match-wrap .mc{background:transparent;border:none;border-radius:0;margin-bottom:0;}
