@@ -854,6 +854,31 @@ function koWin(id){
 
   return null;
 }
+
+function winnerSide(mid){
+  // Knockout matches should use the real knockout winner:
+  // penalties first, then extra time, then full time.
+  if(mid >= 73){
+    const w = koWin(mid);
+    if(w === 0) return 'home';
+    if(w === 1) return 'away';
+    return null;
+  }
+
+  // Group matches only use normal score.
+  const sc = getScore(mid);
+  if(!sc) return null;
+
+  const hs = parseInt(sc.hs);
+  const as = parseInt(sc.as);
+
+  if(isNaN(hs) || isNaN(as)) return null;
+
+  if(hs > as) return 'home';
+  if(as > hs) return 'away';
+
+  return null;
+}
   
 function pairWinner(id,pairs){
   const p = pairs[id] || ['?','?'];
@@ -1022,7 +1047,7 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
   homeTeam = cleanTeamName(homeTeam) || '?';
   awayTeam = cleanTeamName(awayTeam) || '?';
   const sc=getScore(mid);
-  const w=sc?(parseInt(sc.hs)>parseInt(sc.as)?'home':parseInt(sc.as)>parseInt(sc.hs)?'away':null):null;
+  const w = winnerSide(mid);
   const hS=getScorers(mid,'home'),aS=getScorers(mid,'away');
   const hasPills=hS.length||aS.length;
   const homeTbd = !homeTeam || homeTeam === '?' || tbd;
