@@ -1099,11 +1099,15 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
       ${fromApi?`<div class="api-source-note">⚡ Live data from API-Football${useFirebase?' · synced via Firebase':''}</div>`:''}
       <div class="expand-score-row">
         <span class="expand-team-label">${homeTbd?'':(flag(homeTeam))}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px">${homeTeam}</span></span>
-        <input class="score-in" type="number" min="0" max="99" value="${dHs}" placeholder="-" ${fromApi?'readonly':''} oninput="onScoreChange(${mid},'hs',this.value)">
+        <input class="score-in" type="number" min="0" max="99" value="${mainScore ? mainScore[0] : dHs}" placeholder="-" ${fromApi?'readonly':''} oninput="onScoreChange(${mid},'hs',this.value)">
         <span class="score-dash">:</span>
-        <input class="score-in" type="number" min="0" max="99" value="${dAs}" placeholder="-" ${fromApi?'readonly':''} oninput="onScoreChange(${mid},'as',this.value)">
+        <input class="score-in" type="number" min="0" max="99" value="${mainScore ? mainScore[1] : dAs}" placeholder="-" ${fromApi?'readonly':''} oninput="onScoreChange(${mid},'as',this.value)">
         <span class="expand-team-label" style="justify-content:flex-end">${awayTbd?'':(flag(awayTeam))}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px">${awayTeam}</span></span>
       </div>
+        
+      ${et && ft ? `<div class="api-source-note">After extra time: ${et[0]}:${et[1]} · Full time: ${ft[0]}:${ft[1]}</div>` : ''}
+      ${pens ? `<div class="api-source-note">Full time: ${ft ? ft[0] + ':' + ft[1] : dHs + ':' + dAs} · Penalties: ${pens[0]}:${pens[1]}</div>` : ''}
+      
       <div class="scorers-section">
         <div class="scorers-col"><div class="scorers-col-label">⚽ ${homeTeam}</div><div id="scr-${mid}-home">${scorerRowsHTML(mid,'home')}</div>${fromApi?'':`<button class="add-scorer" onclick="addScorer(${mid},'home')">+ Add scorer</button>`}</div>
         <div class="scorers-col"><div class="scorers-col-label">⚽ ${awayTeam}</div><div id="scr-${mid}-away">${scorerRowsHTML(mid,'away')}</div>${fromApi?'':`<button class="add-scorer" onclick="addScorer(${mid},'away')">+ Add scorer</button>`}</div>
