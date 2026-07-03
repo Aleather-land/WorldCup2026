@@ -102,7 +102,7 @@ html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,Blin
   align-items:center;
   justify-content:center;
   line-height:1.05;
-  min-width:42px;
+  min-width:46px;
 }
 
 .mc-main-score{
@@ -708,12 +708,28 @@ async function fetchLiveData(){
         };
       }
 
-      // Score — support both formats
-      let hs=null,as=null;
-      if(m.score&&m.score.ft&&m.score.ft.length===2){hs=m.score.ft[0];as=m.score.ft[1];}
-      else if(m.score1!==undefined&&m.score1!==null&&m.score2!==undefined){hs=m.score1;as=m.score2;}
-      if(hs===null||hs===undefined||as===null||as===undefined||hs===''||as==='')return;
-      if(isNaN(parseInt(hs))||isNaN(parseInt(as)))return;
+      // Score — support half-time, full-time, extra-time and penalties
+      const scoreObj = m.score || {};
+
+      const ht = scoreObj.ht && scoreObj.ht.length === 2 ? scoreObj.ht : null;
+      const ft = scoreObj.ft && scoreObj.ft.length === 2 ? scoreObj.ft : null;
+      const et = scoreObj.et && scoreObj.et.length === 2 ? scoreObj.et : null;
+      const pens = scoreObj.p && scoreObj.p.length === 2 ? scoreObj.p : null;
+
+      // hs/as remain the normal full-time score for group tables and basic display fallback
+      let hs = null;
+      let as = null;
+
+      if(ft){
+        hs = ft[0];
+        as = ft[1];
+      } else if(m.score1 !== undefined && m.score1 !== null && m.score2 !== undefined){
+        hs = m.score1;
+        as = m.score2;
+      }
+
+      if(hs === null || hs === undefined || as === null || as === undefined || hs === '' || as === '') return;
+      if(isNaN(parseInt(hs)) || isNaN(parseInt(as))) return;
 
       resultsCount++;
 
@@ -730,17 +746,21 @@ async function fetchLiveData(){
       }));
 
       apiData[mid] = {
-      hs: parseInt(hs),
-      as: parseInt(as),
-      status: 'FT',
-      isLive: false,
-      isDone: true,
-      homeTeam: homeN,
-      awayTeam: awayN,
-      homeScorers,
-      awayScorers,
-      penalties: m.score && m.score.p ? m.score.p : null,
-      extraTime: m.score && m.score.et ? m.score.et : null
+        hs: parseInt(hs),
+        as: parseInt(as),
+        status: pens ? 'PENS' : (et ? 'AET' : 'FT'),
+        isLive: false,
+        isDone: true,
+        homeTeam: homeN,
+        awayTeam: awayN,
+        homeScorers,
+        awayScorers,
+
+        // Store all score phases
+        halfTime: ht ? [parseInt(ht[0]), parseInt(ht[1])] : null,
+        fullTime: ft ? [parseInt(ft[0]), parseInt(ft[1])] : null,
+        extraTime: et ? [parseInt(et[0]), parseInt(et[1])] : null,
+        penalties: pens ? [parseInt(pens[0]), parseInt(pens[1])] : null
       };
 
       // Push into state for standings calculation
@@ -808,6 +828,32 @@ function koWin(id){
       if(ap > hp) return 1;
     }
   }
+
+  // Extra time decides knockout matches when present.
+  if(d && d.extraTime && d.extraTime.length === 2){
+    const he = parseInt(d.extraTime[0]);
+    const ae = parseInt(d.extraTime[1]);
+
+    if(!isNaN(he) && !isNaN(ae)){
+      if(he > ae) return 0;
+      if(ae > he) return 1;
+    }
+  }
+
+  // Then normal full-time score.
+  const sc = getScore(id);
+  if(!sc) return null;
+
+  const hs = parseInt(sc.hs);
+  const as = parseInt(sc.as);
+
+  if(isNaN(hs) || isNaN(as)) return null;
+
+  if(hs > as) return 0;
+  if(as > hs) return 1;
+
+  return null;
+}
 
   const sc = getScore(id);
   if(!sc) return null;
@@ -947,7 +993,21 @@ function resolveTeams(mid){
 function flag(t){const c=FLAGS[t];if(!c)return'';return`<img class="flag" src="https://flagcdn.com/w40/${c}.png" alt="" onerror="this.style.display='none'">`;}
 function fmtDate(d){return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
 function esc(s){return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-function statusBadge(mid){const d=apiData[mid];if(!d)return'';if(d.isLive)return`<span class="live-badge">LIVE${d.elapsed?' '+d.elapsed+"'":''}`;if(d.isDone)return`<span class="ft-badge">FT</span>`;return'';}
+function statusBadge(mid){
+  const d = apiData[mid];
+  if(!d) return '';
+
+  if(d.isLive){
+    return `<span class="live-badge">LIVE${d.elapsed ? ' ' + d.elapsed + "'" : ''}</span>`;
+  }
+
+  if(d.isDone){
+    const label = d.status || (d.penalties ? 'PENS' : d.extraTime ? 'AET' : 'FT');
+    return `<span class="ft-badge">${label}</span>`;
+  }
+
+  return '';
+}
 
 // Scorer management
 function addScorer(mid,side){if(!state.scorers[mid])state.scorers[mid]={home:[],away:[]};state.scorers[mid][side].push({name:'',min:''});rebuildScorerRows(mid,side);}
@@ -988,14 +1048,39 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
   let hsVal='',asVal='';
   if(gfi){const s=state.groups[gfi.g][gfi.fi];hsVal=s.hs;asVal=s.as;}
   else if(state.ko[mid]){hsVal=state.ko[mid].hs;asVal=state.ko[mid].as;}
-  const dHs=sc?sc.hs:hsVal,dAs=sc?sc.as:asVal;
-  const pens = apiData[mid] && apiData[mid].penalties && apiData[mid].penalties.length === 2
-  ? apiData[mid].penalties
-  : null;
+  const d = apiData[mid] || {};
+  const dHs = sc ? sc.hs : hsVal;
+  const dAs = sc ? sc.as : asVal;
 
-const penText = pens
-  ? `<span class="mc-pens-score">${pens[0]}:${pens[1]}</span><span class="mc-pens-label">pens</span>`
-  : '';
+  const ft = d.fullTime && d.fullTime.length === 2
+    ? d.fullTime
+    : (sc ? [dHs, dAs] : null);
+
+  const et = d.extraTime && d.extraTime.length === 2
+    ? d.extraTime
+    : null;
+
+  const pens = d.penalties && d.penalties.length === 2
+    ? d.penalties
+    : null;
+
+  // What appears as the main score
+  const mainScore = et || ft;
+
+  // What appears underneath
+  let subScoreText = '';
+
+  if(pens){
+    subScoreText = `
+      <span class="mc-pens-score">${pens[0]}:${pens[1]}</span>
+      <span class="mc-pens-label">pens</span>
+  `;
+  } else if(et && ft){
+    subScoreText = `
+      <span class="mc-pens-score">${ft[0]}:${ft[1]}</span>
+      <span class="mc-pens-label">ft</span>
+    `;
+  }
 
   return`<div class="mc ${roundCls}${isLive?' live-match':''}" id="mc-${mid}">
     <div class="mc-header" onclick="toggleMC(this.closest('.mc'))">
@@ -1005,14 +1090,15 @@ const penText = pens
         <span class="mc-scorebox">
           ${sc
             ? `<span class="mc-score-stack">
-                <span class="mc-main-score">
-                  <span class="mc-score-val">${dHs}</span>
-                  <span class="mc-score-sep">:</span>
-                  <span class="mc-score-val">${dAs}</span>
-                </span>
-                ${penText}
-               </span>`
-           : `<span class="mc-score-val no-score">vs</span>`
+                 <span class="mc-main-score">
+                   <span class="mc-score-val">${mainScore[0]}</span>
+                   <span class="mc-score-sep">:</span>
+                   <span class="mc-score-val">${mainScore[1]}</span>
+               </span>
+               ${subScoreText}
+               ${et && !pens ? `<span class="mc-pens-label">aet</span>` : ''}
+             </span>`
+            : `<span class="mc-score-val no-score">vs</span>`
           }
         </span>
         <span class="mc-team-name a${awayTbd?' tbd':''}${wonA}">${awayTbd?'':(flag(awayTeam))}${awayTeam}</span>
@@ -1141,7 +1227,59 @@ function showSec(id){
   document.querySelectorAll('.nav-btn:not(.danger)').forEach((b,i)=>{['groups','r32','r16','qf','sf','final','schedule'].forEach((s,j)=>{if(i===j)b.classList.toggle('active',s===id);});});
   if(id==='schedule')renderSchedule();
 }
-function renderAll(){renderGroups();renderKO();if(document.getElementById('sec-schedule')&&document.getElementById('sec-schedule').classList.contains('active'))renderSchedule();}
+  let hasAutoOpenedRelevantSection = false;
+function renderAll(){
+  renderGroups();
+  renderKO();
+
+  if(!hasAutoOpenedRelevantSection){
+    hasAutoOpenedRelevantSection = true;
+    showSec(getRelevantSection());
+  }
+
+  if(document.getElementById('sec-schedule') && document.getElementById('sec-schedule').classList.contains('active')){
+    renderSchedule();
+  }
+}
+
+function getRelevantSection(){
+  // Final has been completed, so show the champion/final page.
+  if(koWin(104) !== null) return 'final';
+
+  // Final has teams, so the competition is at the final.
+  const finalTeams = resolveTeams(104);
+  if(finalTeams && finalTeams[0] !== '?' && finalTeams[1] !== '?') return 'final';
+
+  // Semi-finals or 3rd-place match are active/relevant.
+  if(koWin(101) !== null || koWin(102) !== null || getScore(101) || getScore(102) || getScore(103)) return 'sf';
+
+  const sfTeams101 = resolveTeams(101);
+  const sfTeams102 = resolveTeams(102);
+  if(
+    (sfTeams101 && sfTeams101[0] !== '?' && sfTeams101[1] !== '?') ||
+    (sfTeams102 && sfTeams102[0] !== '?' && sfTeams102[1] !== '?')
+  ) return 'sf';
+
+  // Quarter-finals are active/relevant.
+  for(let i = 97; i <= 100; i++){
+    const t = resolveTeams(i);
+    if(getScore(i) || (t && t[0] !== '?' && t[1] !== '?')) return 'qf';
+  }
+
+  // Round of 16 is active/relevant.
+  for(let i = 89; i <= 96; i++){
+    const t = resolveTeams(i);
+    if(getScore(i) || (t && t[0] !== '?' && t[1] !== '?')) return 'r16';
+  }
+
+  // Round of 32 is active/relevant.
+  for(let i = 73; i <= 88; i++){
+    const t = resolveTeams(i);
+    if(getScore(i) || (t && t[0] !== '?' && t[1] !== '?')) return 'r32';
+  }
+
+  return 'groups';
+}
 
 let toastTimer=null;
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;void el.offsetWidth;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
