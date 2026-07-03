@@ -1106,7 +1106,7 @@ function buildMC(mid,homeTeam,awayTeam,opts={}){
       </div>
         
       ${et && ft ? `<div class="api-source-note">After extra time: ${et[0]}:${et[1]} · Full time: ${ft[0]}:${ft[1]}</div>` : ''}
-      ${pens ? `<div class="api-source-note">Full time: ${ft ? ft[0] + ':' + ft[1] : dHs + ':' + dAs} · Penalties: ${pens[0]}:${pens[1]}</div>` : ''}
+      ${pens ? `<div class="api-source-note">Penalties: ${pens[0]}:${pens[1]}</div>` : ''}
       
       <div class="scorers-section">
         <div class="scorers-col"><div class="scorers-col-label">⚽ ${homeTeam}</div><div id="scr-${mid}-home">${scorerRowsHTML(mid,'home')}</div>${fromApi?'':`<button class="add-scorer" onclick="addScorer(${mid},'home')">+ Add scorer</button>`}</div>
