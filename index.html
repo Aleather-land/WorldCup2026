@@ -854,20 +854,6 @@ function koWin(id){
 
   return null;
 }
-
-  const sc = getScore(id);
-  if(!sc) return null;
-
-  const hs = parseInt(sc.hs);
-  const as = parseInt(sc.as);
-
-  if(isNaN(hs) || isNaN(as)) return null;
-
-  if(hs > as) return 0;
-  if(as > hs) return 1;
-
-  return null;
-}
   
 function pairWinner(id,pairs){
   const p = pairs[id] || ['?','?'];
@@ -1227,7 +1213,7 @@ function showSec(id){
   document.querySelectorAll('.nav-btn:not(.danger)').forEach((b,i)=>{['groups','r32','r16','qf','sf','final','schedule'].forEach((s,j)=>{if(i===j)b.classList.toggle('active',s===id);});});
   if(id==='schedule')renderSchedule();
 }
-  let hasAutoOpenedRelevantSection = false;
+let hasAutoOpenedRelevantSection = false;
 function renderAll(){
   renderGroups();
   renderKO();
