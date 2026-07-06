@@ -227,8 +227,6 @@ html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,Blin
 </head>
 <body>
 
-</div>
-
 <!-- ══════════════════════════════════════════════
      MAIN APP
      ══════════════════════════════════════════════ -->
@@ -358,8 +356,10 @@ async function launch(withFirebase){
             document.getElementById('last-updated').textContent = 'Updated: ' + data.lastUpdated;
           }
           
-          // First real data load should choose the relevant section.
-          hasAutoOpenedRelevantSection = false;
+          if(!hasLoadedFirebaseOnce){
+            hasLoadedFirebaseOnce = true;
+            hasAutoOpenedRelevantSection = false;
+          }
           renderAll();          
           setApiStatus('ok','✓ Live from Firebase');
         }
@@ -533,6 +533,7 @@ const BADGE_CLS={gs:'b-gs',r32:'b-r32',r16:'b-r16',qf:'b-qf',sf:'b-sf','3p':'b-3
 let state={groups:{},ko:{},scorers:{}};
 let apiData={};
 let hasLiveMatches=false;
+let hasLoadedFirebaseOnce = false;  
 
 function initState(){
   state={groups:{},ko:{},scorers:{}};
