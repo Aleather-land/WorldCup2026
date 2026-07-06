@@ -353,11 +353,14 @@ async function launch(withFirebase){
           if(data.apiData) Object.assign(apiData,data.apiData);
           if(data.groups) Object.assign(state.groups,data.groups);
           if(data.ko) Object.assign(state.ko,data.ko);
-          if(data.lastUpdated) document.getElementById('last-updated').textContent='Updated: '+data.lastUpdated;
+
+          if(data.lastUpdated){
+            document.getElementById('last-updated').textContent = 'Updated: ' + data.lastUpdated;
+          }
           
           // First real data load should choose the relevant section.
           hasAutoOpenedRelevantSection = false;
-          
+          renderAll();          
           setApiStatus('ok','✓ Live from Firebase');
         }
       });
@@ -1292,15 +1295,15 @@ function getRelevantSection(){
 
   // Show semi-finals only once a semi-final or 3rd-place match has a score,
   // or once semi-final teams are known but no later round is complete.
-  if(hasAnyTeams(101, 103)) return 'sf';
+  if(hasAnyScore(101, 103)) return 'sf';
 
   // Show quarter-finals only once a quarter-final has actually been played.
-  if(hasAnyTeams(97, 100)) return 'qf';
+  if(hasAnyScore(97, 100)) return 'qf';
 
   // Show Round of 16 once any Round of 16 game has been played.
   // This means if all R16 games are complete but QFs have not started,
   // the app still opens on R16.
-  if(hasAnyTeams(89, 96)) return 'r16';
+  if(hasAnyScore(89, 96)) return 'r16';
 
   // Show Round of 32 once any Round of 32 game has been played.
   if(hasAnyScore(73, 88)) return 'r32';
