@@ -1274,42 +1274,13 @@ function hasAnyScore(start, end){
   return false;
 }
 
-function hasBothTeams(mid){
-  const t = resolveTeams(mid);
-  return t && t[0] && t[1] && t[0] !== '?' && t[1] !== '?';
-}
-
-function hasAnyTeams(start, end){
-  for(let i = start; i <= end; i++){
-    if(hasBothTeams(i)) return true;
-  }
-  return false;
-}
-
 function getRelevantSection(){
-  // If the final has been played, always show the final.
-  if(getScore(104) || koWin(104) !== null) return 'final';
-
-  // If the final teams are known and the final is the next actual match, show final.
-  // This only happens once both semi-finals are decided.
-  if(hasBothTeams(104)) return 'final';
-
-  // Show semi-finals only once a semi-final or 3rd-place match has a score,
-  // or once semi-final teams are known but no later round is complete.
+  if(hasAnyScore(104)) return 'final';
   if(hasAnyScore(101, 103)) return 'sf';
-
-  // Show quarter-finals only once a quarter-final has actually been played.
   if(hasAnyScore(97, 100)) return 'qf';
-
-  // Show Round of 16 once any Round of 16 game has been played.
-  // This means if all R16 games are complete but QFs have not started,
-  // the app still opens on R16.
   if(hasAnyScore(89, 96)) return 'r16';
-
-  // Show Round of 32 once any Round of 32 game has been played.
   if(hasAnyScore(73, 88)) return 'r32';
 
-  // Before knockout scores exist, but knockout teams are known, show R32.
   if(hasAnyTeams(73, 88)) return 'r32';
 
   return 'groups';
