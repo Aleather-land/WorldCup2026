@@ -1292,15 +1292,15 @@ function getRelevantSection(){
 
   // Show semi-finals only once a semi-final or 3rd-place match has a score,
   // or once semi-final teams are known but no later round is complete.
-  if(hasAnyScore(101, 103)) return 'sf';
+  if(hasAnyTeams(101, 103)) return 'sf';
 
   // Show quarter-finals only once a quarter-final has actually been played.
-  if(hasAnyScore(97, 100)) return 'qf';
+  if(hasAnyTeams(97, 100)) return 'qf';
 
   // Show Round of 16 once any Round of 16 game has been played.
   // This means if all R16 games are complete but QFs have not started,
   // the app still opens on R16.
-  if(hasAnyScore(89, 96)) return 'r16';
+  if(hasAnyTeams(89, 96)) return 'r16';
 
   // Show Round of 32 once any Round of 32 game has been played.
   if(hasAnyScore(73, 88)) return 'r32';
