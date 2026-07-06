@@ -330,7 +330,10 @@ let autoTimer=null;
 
 async function launch(withFirebase){
   initState();
-  renderAll();
+  
+  // Render the static page, but do not auto-pick the relevant section yet.
+  renderGroups();
+  renderKO();
 
   if(withFirebase && window._fbImports){
     try{
@@ -351,7 +354,10 @@ async function launch(withFirebase){
           if(data.groups) Object.assign(state.groups,data.groups);
           if(data.ko) Object.assign(state.ko,data.ko);
           if(data.lastUpdated) document.getElementById('last-updated').textContent='Updated: '+data.lastUpdated;
-          renderAll();
+          
+          // First real data load should choose the relevant section.
+          hasAutoOpenedRelevantSection = false;
+          
           setApiStatus('ok','✓ Live from Firebase');
         }
       });
@@ -1303,6 +1309,7 @@ function getRelevantSection(){
   if(hasAnyTeams(73, 88)) return 'r32';
 
   return 'groups';
+}
 
 let toastTimer=null;
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;void el.offsetWidth;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
