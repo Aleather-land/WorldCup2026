@@ -374,7 +374,14 @@ async function launch(withFirebase){
     fetchLiveData();
   }
 }
-
+import{
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
+}
+  from'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+  
 async function saveToFirebase(){
   if(!useFirebase||!fbDb)return;
   try{
