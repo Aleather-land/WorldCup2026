@@ -234,7 +234,7 @@ html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,Blin
 
 <div class="hdr">
   <div class="hdr-title">⚽ FIFA World Cup 2026</div>
-  <div class="hdr-sub">Live Wall Chart · USA · Canada · Mexico . v2026-07-06-1</div>
+  <div class="hdr-sub">Live Wall Chart · USA · Canada · Mexico . v2026-07-14-auth-1</div>
 </div>
 
 <div class="update-bar">
@@ -245,6 +245,8 @@ html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,Blin
     <span id="api-status-badge" class="api-status api-wait">Ready</span>
     <span id="fb-status-badge" class="fb-badge" style="display:none">🔥 Firebase connected</span>
     <span id="last-updated" class="last-updated">Not yet fetched</span>
+    <button class="nav-btn" id="admin-login-btn" onclick="adminLogin()">Admin sign in</button>
+    <span id="admin-status" class="last-updated">Not signed in</span>
     <span class="auto-badge" id="auto-badge">⏱ Auto-updating</span>
   </div>
 </div>
@@ -313,7 +315,28 @@ html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,Blin
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import{getDatabase,ref,set,onValue,get}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-window._fbImports={initializeApp,getDatabase,ref,set,onValue,get};
+import{
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut
+}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+window._fbImports={
+  initializeApp,
+  getDatabase,
+  ref,
+  set,
+  onValue,
+  get,
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut
+};
+
 window.dispatchEvent(new Event('fbReady'));
 </script>
 
@@ -323,6 +346,8 @@ window.dispatchEvent(new Event('fbReady'));
 // ════════════════════════════════════════════════
 let CFG={apiKey:'',fbApiKey:'AIzaSyCX9axD4uj7Owf_s_hhS1YUB0PM3MI0irE',fbAuthDomain:'worldcup26-edbfd.firebaseapp.com',fbDbUrl:'https://worldcup26-edbfd-default-rtdb.firebaseio.com',fbProjectId:'worldcup26-edbfd'};
 let fbDb=null, fbReady=false, useFirebase=false;
+let fbAuth=null;
+let currentUser=null;
 const AUTO_REFRESH_MS=3*60*1000;
 let autoTimer=null;
 
@@ -335,12 +360,28 @@ async function launch(withFirebase){
 
   if(withFirebase && window._fbImports){
     try{
-      const{initializeApp,getDatabase,ref,onValue,set,get}=window._fbImports;
+      const{initializeApp,getDatabase,ref,onValue,set,get,getAuth,onAuthStateChanged}=window._fbImports;
       const fbApp=initializeApp({
         apiKey:CFG.fbApiKey,authDomain:CFG.fbAuthDomain,
         databaseURL:CFG.fbDbUrl,projectId:CFG.fbProjectId
       });
       fbDb=getDatabase(fbApp);
+      fbAuth=getAuth(fbApp);
+
+      onAuthStateChanged(fbAuth,user=>{
+        currentUser=user;
+        const adminStatus=document.getElementById('admin-status');
+        const adminBtn=document.getElementById('admin-login-btn');
+
+        if(user){
+          if(adminStatus)adminStatus.textContent='Signed in: '+(user.email||user.uid);
+          if(adminBtn)adminBtn.textContent='Signed in';
+        }else{
+          if(adminStatus)adminStatus.textContent='Not signed in';
+          if(adminBtn)adminBtn.textContent='Admin sign in';
+        }
+      });
+
       useFirebase=true;
       document.getElementById('fb-status-badge').style.display='inline';
       // Listen for real-time updates from Firebase
@@ -374,26 +415,53 @@ async function launch(withFirebase){
     fetchLiveData();
   }
 }
-import{
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged
+async function adminLogin(){
+  if(!fbAuth){
+    toast('Firebase Auth is not ready yet','err');
+    return;
+  }
+
+  try{
+    const{GoogleAuthProvider,signInWithPopup}=window._fbImports;
+    const provider=new GoogleAuthProvider();
+    const result=await signInWithPopup(fbAuth,provider);
+    currentUser=result.user;
+    toast('Signed in as '+(currentUser.email||currentUser.uid),'ok');
+  }catch(e){
+    console.error(e);
+    toast('Sign-in failed: '+e.message,'err');
+  }
 }
-  from'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-  
+
 async function saveToFirebase(){
-  if(!useFirebase||!fbDb)return;
+  if(!useFirebase||!fbDb){
+    toast('Firebase is not connected, so scores were not synced','err');
+    return false;
+  }
+
   try{
     const{ref,set}=window._fbImports;
     const scoresRef=ref(fbDb,'wc2026/scores');
+
     await set(scoresRef,{
       apiData,
       groups:state.groups,
       ko:state.ko,
       lastUpdated:new Date().toLocaleTimeString()
     });
-  }catch(e){console.error('Firebase save error:',e);}
+
+    return true;
+  }catch(e){
+    console.error('Firebase save error:',e);
+
+    if(String(e.message).toLowerCase().includes('permission')){
+      toast('Firebase write denied. Sign in as admin, or check your rules/admin UID.','err');
+    }else{
+      toast('Firebase save error: '+e.message,'err');
+    }
+
+    return false;
+  }
 }
 
 // ════════════════════════════════════════════════
@@ -790,7 +858,12 @@ async function fetchLiveData(){
     const timeStr=new Date().toLocaleTimeString();
     document.getElementById('last-updated').textContent='Updated: '+timeStr;
 
-    await saveToFirebase();
+    const saved=await saveToFirebase();
+    if(!saved){
+      setApiStatus('err','Scores loaded, but Firebase save failed');
+    }else{
+      setApiStatus('ok','✓ '+resultsCount+' results loaded and saved');
+    }
     clearTimeout(autoTimer);
     document.getElementById('auto-badge').style.display='none';
     renderAll();
@@ -1277,6 +1350,18 @@ function renderAll(){
 function hasAnyScore(start, end){
   for(let i = start; i <= end; i++){
     if(getScore(i)) return true;
+  }
+  return false;
+}
+
+function hasBothTeams(mid){
+  const t=resolveTeams(mid);
+  return t&&t[0]&&t[1]&&t[0]!=='?'&&t[1]!=='?';
+}
+
+function hasAnyTeams(start,end){
+  for(let i=start;i<=end;i++){
+    if(hasBothTeams(i))return true;
   }
   return false;
 }
