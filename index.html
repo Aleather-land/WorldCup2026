@@ -1355,7 +1355,7 @@ function renderAll(){
   }
 }
 
-function hasAnyScore(start, end){
+function hasAnyScore(start, end = start){
   for(let i = start; i <= end; i++){
     if(getScore(i)) return true;
   }
@@ -1367,7 +1367,7 @@ function hasBothTeams(mid){
   return t&&t[0]&&t[1]&&t[0]!=='?'&&t[1]!=='?';
 }
 
-function hasAnyTeams(start,end){
+function hasAnyTeams(start,end = start){
   for(let i=start;i<=end;i++){
     if(hasBothTeams(i))return true;
   }
